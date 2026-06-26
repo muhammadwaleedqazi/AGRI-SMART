@@ -3,7 +3,10 @@
 @inject AdvisoryService AdvisoryService
 @inject NavigationManager NavigationManager
 @inject AgriSmart.Web.Services.AppState AppState
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @implements IDisposable
+
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fs-4 fw-bold mb-0">@AppState.T("Admin Panel", "ایڈمن پینل")</h2>
@@ -14,9 +17,12 @@
         @if (_showProfileMenu)
         {
             <div class="position-absolute end-0 mt-2 bg-white rounded shadow p-3" style="z-index: 1050; width: 220px;">
-                <div class="fw-bold small">@AppState.T("Administrator", "سستم ایڈمنسٹریٹر")</div>
-                <div class="text-muted small mb-2">admin@agrismart.pk</div>
+                <div class="fw-bold small">@(_adminUser?.FullName ?? AppState.T("Administrator", "سستم ایڈمنسٹریٹر"))</div>
+                <div class="text-muted small mb-2">@(_adminUser?.Email ?? "admin@agrismart.pk")</div>
                 <hr class="my-2" />
+                <a href="/admin/profile" class="btn btn-outline-success btn-sm w-100 mb-2">
+                    <span class="oi oi-person me-1"></span> @AppState.T("Edit Profile", "پروفائل تبدیل کریں")
+                </a>
                 <a href="/logout" class="btn btn-danger btn-sm w-100">@AppState.T("Logout", "لاگ آؤٹ")</a>
             </div>
         }
@@ -234,6 +240,7 @@ else
 }
 
 @code {
+    private ApplicationUser _adminUser;
     private bool _showProfileMenu = false;
     private string _activeView = "None"; // None, DataGrid, Add, EditList, EditForm, DeleteList
     private string _viewTitle = "";
@@ -243,10 +250,24 @@ else
 
     private AdvisoryRecord _formRecord = new AdvisoryRecord();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AppState.OnChange += StateHasChanged;
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var principal = authState.User;
+            if (principal?.Identity?.IsAuthenticated == true)
+            {
+                _adminUser = await UserManager.GetUserAsync(principal);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to load admin profile: " + ex.Message;
+        }
     }
+
 
     private async Task ToggleProfileMenu()
     {

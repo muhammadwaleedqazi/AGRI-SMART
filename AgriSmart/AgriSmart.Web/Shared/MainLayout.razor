@@ -36,30 +36,39 @@
     </main>
 
     @* Mobile Bottom Nav *@
-    <nav class="fixed-bottom d-flex justify-content-around d-md-none bg-white border-top py-2 shadow-lg" style="z-index: 1000;">
-        <a href="/farmer/dashboard" class="text-success text-decoration-none text-center">
-            <span class="oi oi-home d-block mb-1"></span>
-            <small>@AppState.T("Home", "گھر")</small>
-        </a>
-        <a href="/farmer/weather" class="text-success text-decoration-none text-center">
-            <span class="oi oi-cloud d-block mb-1"></span>
-            <small>@AppState.T("Weather", "موسم")</small>
-        </a>
-        
-        <button @onclick="ToggleChatbot" class="btn btn-link text-success text-decoration-none text-center p-0 border-0 shadow-none">
-            <span class="oi oi-chat d-block mb-1"></span>
-            <small>@AppState.T("Chatbot", "چیٹ بوٹ")</small>
-        </button>
+    <AuthorizeView Roles="Farmer">
+        <Authorized>
+            <nav class="fixed-bottom d-flex justify-content-around d-md-none bg-white border-top py-2 shadow-lg" style="z-index: 1030;">
+                <a href="/farmer/dashboard" class="text-success text-decoration-none text-center">
+                    <span class="oi oi-home d-block mb-1"></span>
+                    <small>@AppState.T("Home", "گھر")</small>
+                </a>
+                <a href="/farmer/weather" class="text-success text-decoration-none text-center">
+                    <span class="oi oi-cloud d-block mb-1"></span>
+                    <small>@AppState.T("Weather", "موسم")</small>
+                </a>
+                
+                <button @onclick="ToggleChatbot" class="btn btn-link text-success text-decoration-none text-center p-0 border-0 shadow-none">
+                    <span class="oi oi-chat d-block mb-1"></span>
+                    <small>@AppState.T("Chatbot", "چیٹ بوٹ")</small>
+                </button>
 
-        <a href="/farmer/crops" class="text-success text-decoration-none text-center">
-            <span class="oi oi-sun d-block mb-1"></span>
-            <small>@AppState.T("Crops", "فصلیں")</small>
-        </a>
-        <a href="/farmer/advisory" class="text-success text-decoration-none text-center">
-            <span class="oi oi-spreadsheet d-block mb-1"></span>
-            <small>@AppState.T("Advisory", "مشورہ")</small>
-        </a>
-    </nav>
+                <a href="/farmer/crops" class="text-success text-decoration-none text-center">
+                    <span class="oi oi-sun d-block mb-1"></span>
+                    <small>@AppState.T("Crops", "فصلیں")</small>
+                </a>
+                <a href="/farmer/advisory" class="text-success text-decoration-none text-center">
+                    <span class="oi oi-spreadsheet d-block mb-1"></span>
+                    <small>@AppState.T("Advisory", "مشورہ")</small>
+                </a>
+                <a href="/farmer/profile" class="text-success text-decoration-none text-center">
+                    <span class="oi oi-person d-block mb-1"></span>
+                    <small>@AppState.T("Profile", "پروفائل")</small>
+                </a>
+            </nav>
+        </Authorized>
+    </AuthorizeView>
+
 
     @* Float Chatbot Component *@
     <Chatbot @ref="_chatbot" />

@@ -1,0 +1,303 @@
+@page "/admin/profile"
+@attribute [Authorize(Roles = "Admin")]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fs-3 fw-bold text-success mb-1">Admin Profile</h2>
+            <p class="text-muted small mb-0">Check and update your administrator details and password.</p>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="GoToPanel">
+            <span class="oi oi-arrow-left me-1"></span> Admin Panel
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm border-0" role="alert" style="border-left: 4px solid #198754 !important;">
+            <span class="oi oi-check-circle-outline me-2"></span>
+            <strong>Success!</strong> @_successMessage
+            <button type="button" class="btn-close" @onclick="ClearMessages" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm border-0" role="alert" style="border-left: 4px solid #dc3545 !important;">
+            <span class="oi oi-warning me-2"></span>
+            <strong>Error:</strong> @_errorMessage
+            <button type="button" class="btn-close" @onclick="ClearMessages" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="card p-5 shadow-sm border-0 text-center">
+            <div class="spinner-border text-success mx-auto" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted mb-0">Loading your profile information...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Profile Info Form -->
+            <div class="col-12 col-lg-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <h5 class="fw-bold text-success mb-0">
+                            <span class="oi oi-person me-2"></span>Personal Information
+                        </h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <hr class="mt-0 mb-4" />
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold text-muted small">Username</label>
+                                <input type="text" class="form-control bg-light" value="@_user.UserName" readonly />
+                                <span class="text-muted small" style="font-size: 0.75rem;">Username cannot be changed.</span>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold text-muted small">Email Address</label>
+                                <input type="email" class="form-control" @bind="_email" placeholder="example@domain.com" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-muted small">Full Name</label>
+                                <input type="text" class="form-control" @bind="_fullName" placeholder="Enter your full name" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold text-muted small">Region</label>
+                                <select class="form-select" @bind="_region">
+                                    <option value="">Select your region</option>
+                                    @foreach (var p in PakistanData.Provinces)
+                                    {
+                                        <option value="@p">@p</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold text-muted small">Phone Number</label>
+                                <input type="text" class="form-control" @bind="_phoneNumber" placeholder="03xx-xxxxxxx" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <button class="btn btn-success fw-bold px-4" @onclick="SaveProfileAsync">
+                                <span class="oi oi-circle-check me-1"></span> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Form -->
+            <div class="col-12 col-lg-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <h5 class="fw-bold text-danger mb-0">
+                            <span class="oi oi-lock-locked me-2"></span>Change Password
+                        </h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <hr class="mt-0 mb-4" />
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <label class="form-label fw-bold text-muted small">Current Password</label>
+                                <input type="password" class="form-control" @bind="_currentPassword" placeholder="Required to change password" />
+                            </div>
+                            <div>
+                                <label class="form-label fw-bold text-muted small">New Password</label>
+                                <input type="password" class="form-control" @bind="_newPassword" placeholder="Minimum 8 characters" />
+                            </div>
+                            <div>
+                                <label class="form-label fw-bold text-muted small">Confirm New Password</label>
+                                <input type="password" class="form-control" @bind="_confirmPassword" placeholder="Match new password" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <button class="btn btn-outline-danger fw-bold px-4" @onclick="ChangePasswordAsync">
+                                <span class="oi oi-key me-1"></span> Update Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ApplicationUser _user;
+    private bool _loading = true;
+    private string _successMessage;
+    private string _errorMessage;
+
+    // Profile Form Fields
+    private string _fullName;
+    private string _email;
+    private string _region;
+    private string _phoneNumber;
+
+    // Password Change Fields
+    private string _currentPassword;
+    private string _newPassword;
+    private string _confirmPassword;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfileAsync();
+    }
+
+    private async Task LoadUserProfileAsync()
+    {
+        try
+        {
+            _loading = true;
+            _successMessage = null;
+            _errorMessage = null;
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var principal = authState.User;
+            if (principal?.Identity?.IsAuthenticated == true)
+            {
+                _user = await UserManager.GetUserAsync(principal);
+                if (_user != null)
+                {
+                    _fullName = _user.FullName;
+                    _email = _user.Email;
+                    _region = _user.Region;
+                    _phoneNumber = _user.PhoneNumber;
+                }
+                else
+                {
+                    _errorMessage = "Unable to load user profile.";
+                }
+            }
+            else
+            {
+                _errorMessage = "You are not authenticated.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "An error occurred: " + ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveProfileAsync()
+    {
+        try
+        {
+            _successMessage = null;
+            _errorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(_fullName))
+            {
+                _errorMessage = "Full Name is required.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_email))
+            {
+                _errorMessage = "Email Address is required.";
+                return;
+            }
+
+            _loading = true;
+
+            // Update user properties
+            _user.FullName = _fullName;
+            _user.Email = _email;
+            _user.Region = _region;
+            _user.PhoneNumber = _phoneNumber;
+
+            var result = await UserManager.UpdateAsync(_user);
+            if (result.Succeeded)
+            {
+                _successMessage = "Profile updated successfully!";
+            }
+            else
+            {
+                _errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to update profile: " + ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        try
+        {
+            _successMessage = null;
+            _errorMessage = null;
+
+            if (string.IsNullOrEmpty(_currentPassword))
+            {
+                _errorMessage = "Current Password is required to update security credentials.";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_newPassword) || _newPassword.Length < 8)
+            {
+                _errorMessage = "New Password must be at least 8 characters long.";
+                return;
+            }
+
+            if (_newPassword != _confirmPassword)
+            {
+                _errorMessage = "New Password and Confirm New Password do not match.";
+                return;
+            }
+
+            _loading = true;
+
+            var result = await UserManager.ChangePasswordAsync(_user, _currentPassword, _newPassword);
+            if (result.Succeeded)
+            {
+                _successMessage = "Password updated successfully!";
+                _currentPassword = null;
+                _newPassword = null;
+                _confirmPassword = null;
+            }
+            else
+            {
+                _errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to change password: " + ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void GoToPanel()
+    {
+        NavigationManager.NavigateTo("/admin/panel");
+    }
+
+    private void ClearMessages()
+    {
+        _successMessage = null;
+        _errorMessage = null;
+    }
+}

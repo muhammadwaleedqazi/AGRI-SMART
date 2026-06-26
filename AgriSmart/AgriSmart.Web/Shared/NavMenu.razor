@@ -2,24 +2,52 @@
 @implements IDisposable
 
 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-    <li class="nav-item">
-        <a class="nav-link" href="/farmer/dashboard"><span class="oi oi-home me-1"></span> @AppState.T("Dashboard", "ڈیش بورڈ")</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="/farmer/weather"><span class="oi oi-cloud me-1"></span> @AppState.T("Weather", "موسم")</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="/farmer/crops"><span class="oi oi-sun me-1"></span> @AppState.T("Crop Guide", "فصلوں کی رہنمائی")</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="/farmer/advisory"><span class="oi oi-spreadsheet me-1"></span> @AppState.T("Advisory", "زرعی مشورہ")</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="/admin/panel"><span class="oi oi-dashboard me-1"></span> @AppState.T("Admin Panel", "ایڈمن پینل")</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-danger fw-bold" href="/logout"><span class="oi oi-account-logout me-1"></span> @AppState.T("Logout", "لاگ آؤٹ")</a>
-    </li>
+    <AuthorizeView Roles="Farmer">
+        <Authorized>
+            <li class="nav-item">
+                <a class="nav-link" href="/farmer/dashboard"><span class="oi oi-home me-1"></span> @AppState.T("Dashboard", "ڈیش بورڈ")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/farmer/weather"><span class="oi oi-cloud me-1"></span> @AppState.T("Weather", "موسم")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/farmer/crops"><span class="oi oi-sun me-1"></span> @AppState.T("Crop Guide", "فصلوں کی رہنمائی")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/farmer/advisory"><span class="oi oi-spreadsheet me-1"></span> @AppState.T("Advisory", "زرعی مشورہ")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/farmer/profile"><span class="oi oi-person me-1"></span> @AppState.T("Profile", "پروفائل")</a>
+            </li>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/panel"><span class="oi oi-dashboard me-1"></span> @AppState.T("Admin Panel", "ایڈمن پینل")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/profile"><span class="oi oi-person me-1"></span> @AppState.T("Profile", "پروفائل")</a>
+            </li>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView>
+        <Authorized>
+            <li class="nav-item">
+                <a class="nav-link text-danger fw-bold" href="/logout"><span class="oi oi-account-logout me-1"></span> @AppState.T("Logout", "لاگ آؤٹ")</a>
+            </li>
+        </Authorized>
+        <NotAuthorized>
+            <li class="nav-item">
+                <a class="nav-link fw-bold text-success" href="/login"><span class="oi oi-account-login me-1"></span> @AppState.T("Login", "لاگ ان")</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-bold text-primary" href="/register"><span class="oi oi-person me-1"></span> @AppState.T("Register", "رجسٹر")</a>
+            </li>
+        </NotAuthorized>
+    </AuthorizeView>
 </ul>
 
 @code {
@@ -33,3 +61,4 @@
         AppState.OnChange -= StateHasChanged;
     }
 }
+
