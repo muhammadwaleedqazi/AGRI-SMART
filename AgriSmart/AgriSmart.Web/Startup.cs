@@ -70,6 +70,7 @@ namespace AgriSmart.Web
             services.AddScoped<AppState>();
             services.AddMemoryCache();
             services.AddScoped<EmailService>();
+            services.AddScoped<GeminiChatService>();
             services.AddHttpContextAccessor();
             services.AddControllers();
             services.AddRazorPages();

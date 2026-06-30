@@ -97,7 +97,7 @@ else
         {
             _loading = true;
             _errorMessage = null;
-            _crops = AdvisoryService.GetCropNames() ?? new List<string>();
+            _crops = await AdvisoryService.GetCropNamesAsync() ?? new List<string>();
             await SearchAdvisories();
         }
         catch (Exception ex)
@@ -124,7 +124,7 @@ else
             _loading = true;
             _errorMessage = null;
             await Task.Delay(200); // Simulate network load
-            _filteredAdvisories = AdvisoryService.Search(_dateFrom, _dateTo, _selectedCrop) ?? new List<AdvisoryRecord>();
+            _filteredAdvisories = await AdvisoryService.SearchAsync(_dateFrom, _dateTo, _selectedCrop) ?? new List<AdvisoryRecord>();
         }
         catch (Exception ex)
         {

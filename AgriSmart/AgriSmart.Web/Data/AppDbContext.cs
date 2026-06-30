@@ -9,6 +9,8 @@ namespace AgriSmart.Web.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public DbSet<AdvisoryRecord> Advisories { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
